@@ -6,8 +6,13 @@ export interface IUser extends Document {
   password?: string;
   phoneNumber?: string;
   profileImg?: string;
+  status?: 'Active' | 'Deactive';
   userType?: "ADMIN" | "CLIENT";
   passwordResetToken?: {
+    token: string;
+    date: Date;
+  };
+  emailVerificationToken?: {
     token: string;
     date: Date;
   };
@@ -19,6 +24,7 @@ export interface IUser extends Document {
   updatedAt: Date;
   generateAuthToken?: () => string;
   generatePasswordReset?: () => void;
+  generateEmailVerificationCode?: () => void;
 }
 
 export interface IUserModel extends Model<IUser> {
