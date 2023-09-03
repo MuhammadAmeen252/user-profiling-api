@@ -5,4 +5,5 @@ export interface IParams {
   sortBy: string;
   isVerified: string;
   userType: string;
+  order: string;
 };

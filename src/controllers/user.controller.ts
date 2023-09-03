@@ -1,19 +1,20 @@
 import { User } from "../models";
 import { IResponse, IRequest, INextFunction, IParams, IUser } from "../types";
-import { sendAccountVerificationMail, statusCodes } from "../utils";
+import { isValidUserKeys, sendAccountVerificationMail, statusCodes } from "../utils";
 
 export const registerUser = async (
   req: IRequest,
   res: IResponse,
   next: INextFunction
 ) => {
-  const user = new User(req.body);
+  const user: IUser = new User(req.body);
   try {
-    const updates = Object.keys(req.body);
-    if (updates.length === 0) {
+    const keys = Object.keys(req.body);
+    const isValidKeys = isValidUserKeys(keys);
+    if (!isValidKeys) {
       return res.sendResponse(
         null,
-        { message: "Please enter valid user data!x" },
+        { message: "Please enter valid data!" },
         statusCodes.CONFLICT_DATA
       );
     }
@@ -187,46 +188,51 @@ export const getUsers = async (
       search,
       sortBy,
       isVerified,
-      userType
-    }: IParams = req.query as {
-      page: string;
-      limit: string;
-      search: string;
-      sortBy: string;
-      isVerified: string;
-      userType: string;
-    };
+      userType,
+      order
+    }: IParams = req.query as any;
+    const DEFAULT_PAGE = '0';
+    const DEFAULT_LIMIT = '20';
 
     const baseQuery: any = {};
 
-    if(search){
+    if (search) {
       baseQuery.name = { $regex: search, $options: 'i' };
     }
 
-    if(isVerified === "1"){
+    if (isVerified === '1') {
       baseQuery.isAccountVerified = true;
     }
 
-    if(userType){
+    if (userType) {
       baseQuery.userType = userType;
     }
-    const sortedBy: any = sortBy ? {[sortBy]: -1} : {createdAt: -1};
+    const sortedBy: any = sortBy ? { [sortBy]: order || -1 } : { createdAt: -1 };
     const totalRecords = await User.countDocuments(baseQuery);
 
-    // Getting filtered and paginated records
-    const pageNumber = parseInt(page || "0", 10);
-    const limitNumber = parseInt(limit || "20", 10);
+    const pageNumber = parseInt(page || DEFAULT_PAGE, 10);
+    const limitNumber = parseInt(limit || DEFAULT_LIMIT, 10);
     const users = await User.find(baseQuery)
       .sort(sortedBy)
       .skip(pageNumber * limitNumber)
       .limit(limitNumber);
 
-    res.sendResponse({
-      recordsTotal: totalRecords,
-      recordsFiltered: users.length,
-      data: users
-    }
-    , null, statusCodes.OK);
+    const totalPages = Math.ceil(totalRecords / limitNumber);
+    const currentPage = pageNumber + 1;
+
+    res.sendResponse(
+      {
+        recordsTotal: totalRecords,
+        recordsFiltered: users.length,
+        data: users,
+        isNextPage: currentPage < totalPages,
+        isPreviousPage: currentPage > 1,
+        totalPages,
+        currentPage,
+      },
+      null,
+      statusCodes.OK
+    );
   } catch (e) {
     e.status = statusCodes.NOT_FOUND;
     next(e);
@@ -239,27 +245,12 @@ export const updateProfile = async (
   next: INextFunction
 ) => {
   try {
-    const updates = Object.keys(req.body);
-    if (updates.length === 0) {
+    const keys = Object.keys(req.body);
+    const isValidKeys = isValidUserKeys(keys);
+    if (!isValidKeys) {
       return res.sendResponse(
         null,
-        { message: "Please eneter valid keys!" },
-        statusCodes.CONFLICT_DATA
-      );
-    }
-    const notAllowedUpdated = [
-      "userType",
-      "passwordResetToken",
-      "status",
-      "isAccountVerified",
-    ];
-    const isNotalidOperation = updates.every((update) =>
-      notAllowedUpdated.includes(update)
-    );
-    if (isNotalidOperation || updates.length == 0) {
-      return res.sendResponse(
-        null,
-        { message: "Enter valid keys!" },
+        { message: "Please enter valid data!" },
         statusCodes.CONFLICT_DATA
       );
     }
@@ -274,7 +265,7 @@ export const updateProfile = async (
         );
       }
     }
-    updates.forEach((update) => (user[update] = req.body[update]));
+    keys.forEach((update) => (user[update] = req.body[update]));
     await user.save();
     res.sendResponse({ user }, null, statusCodes.OK);
   } catch (e) {
