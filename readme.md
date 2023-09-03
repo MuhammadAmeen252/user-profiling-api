@@ -1,10 +1,10 @@
 # User Profiing 
-A user profiling API writeen in node JS using express. It handles used authentication via role using JWT.
+A user profiling API written in node JS using express. It handles role based users authentication using JWT.
 
 ## Working
-We can add users of with role of CLIENT or ADMIN. After registartion of user we save the JWT token of user in its profile in tokens array, so the user can login from multiple devices even if logged out from one. After login user gets the JWT that is used for its authentication for fetching or adding data to API. Each user's JWT_CODE is different as corresponding to its role. So one secret code doesn't automatically compromise all roles but in most cases I user one code because that is easier to manage but for more security I have defined different codes here.
-After signup user gets email to verify its account. If user forgets password we can use forget password APIs to recover its apssword using its email. I send a random code to user's email for verification and then verify that code with verification API. If it matched with the code saved in user's document then we have the user verified else we show him the message of expiry or not correct code.
-For admin I have added getUsers API that fetches users with the filters passed in the params. I made it compatible with teh dataTables so sending and receiving data is easier for the datatables used in client side.
+We can add users with role of CLIENT or ADMIN. After registartion of user we save the JWT token of user in its profile in tokens array, so the user can login from multiple devices even if logged out from one. After login user gets the JWT that is used for its authentication for fetching or adding data to API. Each user's JWT_CODE is different as corresponding to its role. I used different codes so that one secret code doesn't compromise all roles. But in most cases I user one code because that is easier to manage but for more security I have defined different codes here.
+After signup user gets email to verify its account. If user forgets password we can use forget password APIs to recover its password using its email. I send a random code to user's email for verification and then verify that code with verification API. If it matched with the code saved in user's document then we have the user verified else we show him the message of expiry or not correct code.
+For admin I have added getUsers API that fetches users with the filters passed in the params. I made it compatible with the dataTables so sending and receiving data is easier for the datatables used in client side.
 
 ## APIs
 I have added the following APIs in the app:
