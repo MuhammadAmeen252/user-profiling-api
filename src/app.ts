@@ -18,7 +18,7 @@ const PORT: number = parseInt(process.env.PORT, 10) || 8080;
 
 //security
 const corsOptions = {
-    origin: 'http://localhost:8080'
+    // origin: 'http://localhost:8080'
 }
 app.use(cors(corsOptions));
 app.use(helmet());

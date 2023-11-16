@@ -1,4 +1,5 @@
 import { Document, Model } from "mongoose";
+import { IAddress } from "./address";
 
 export interface IUser extends Document {
   name?: string;
@@ -12,6 +13,7 @@ export interface IUser extends Document {
     token: string;
     date: Date;
   };
+  addresses?:[IAddress],
   emailVerificationToken?: {
     token: string;
     date: Date;

@@ -2,8 +2,32 @@ import { Schema, model } from "mongoose";
 import Joi from "joi";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { IUser, IUserModel } from "../types";
+import { IAddress, IUser, IUserModel } from "../types";
 import { generateRandomCode } from "../utils";
+
+const AddressSchema: Schema<IAddress> = new Schema(
+  {
+    addressLine1:{
+      type: String,
+      required: true
+    },
+    addressLine2:{
+      type: String,
+    },
+    city:{
+      type: String,
+      required: true
+    },
+    state:{
+      type: String,
+      required: true
+    },
+    country:{
+      type:String,
+      required: true
+    }
+  }
+)
 
 const UserSchema: Schema<IUser> = new Schema(
   {
@@ -19,6 +43,9 @@ const UserSchema: Schema<IUser> = new Schema(
     password: {
       type: String,
       required: true,
+    },
+    addresses:{
+      type: [AddressSchema]
     },
     phoneNumber: {
       type: String,

@@ -162,7 +162,7 @@ export const getUserInfoById = async (
   next: INextFunction
 ) => {
   try {
-    const userId = req.user._id;
+    const userId = req?.user?._id || req?.params?.id;
     const user = await User.findOne({
       _id: userId,
     });
@@ -213,6 +213,7 @@ export const getUsers = async (
     const pageNumber = parseInt(page || DEFAULT_PAGE, 10);
     const limitNumber = parseInt(limit || DEFAULT_LIMIT, 10);
     const users = await User.find(baseQuery)
+      .select('_id name email')
       .sort(sortedBy)
       .skip(pageNumber * limitNumber)
       .limit(limitNumber);
@@ -233,6 +234,50 @@ export const getUsers = async (
       null,
       statusCodes.OK
     );
+  } catch (e) {
+    e.status = statusCodes.NOT_FOUND;
+    next(e);
+  }
+};
+
+export const updateUserById = async (
+  req: IRequest,
+  res: IResponse,
+  next: INextFunction
+) => {
+  try {
+    const keys = Object.keys(req.body);
+    const isValidKeys = isValidUserKeys(keys);
+    if (!isValidKeys) {
+      return res.sendResponse(
+        null,
+        { message: "Please enter valid data!" },
+        statusCodes.CONFLICT_DATA
+      );
+    }
+    const user: any = await User.findOne({_id: req.params.id});
+    if(!user){
+      throw new Error("No user found!")
+    }
+    const userpass = user.password;
+    keys.forEach((update) => (user[update] = req.body[update]));
+    user.password = userpass;
+    await user.save();
+    res.sendResponse({ user }, null, statusCodes.OK);
+  } catch (e) {
+    e.status = statusCodes.NOT_FOUND;
+    next(e);
+  }
+};
+
+export const deleteUserById = async (
+  req: IRequest,
+  res: IResponse,
+  next: INextFunction
+) => {
+  try {
+    const user: any = await User.findByIdAndRemove(req.params.id);
+    res.sendResponse({ user }, null, statusCodes.OK);
   } catch (e) {
     e.status = statusCodes.NOT_FOUND;
     next(e);

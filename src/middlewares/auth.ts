@@ -11,7 +11,7 @@ export const authAdmin = async(req: IRequest, res: IResponse, next: INextFunctio
         if(!user){
             throw new Error()
         }
-        if(!(user.userType === "ADMIN")){
+        if((user.userType !== "ADMIN")){
             throw new Error()
         }
         req.user = user
