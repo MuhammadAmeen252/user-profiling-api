@@ -1,6 +1,6 @@
 import { User } from "../models";
 import { IResponse, IRequest, INextFunction, IParams, IUser } from "../types";
-import { isValidUserKeys, sendAccountVerificationMail, statusCodes } from "../utils";
+import { isValidUserKeys, sendAccountVerificationMail, statusCodes, generateRandomUser } from "../utils";
 
 export const registerUser = async (
   req: IRequest,
@@ -162,7 +162,27 @@ export const getUserInfoById = async (
   next: INextFunction
 ) => {
   try {
-    const userId = req?.user?._id || req?.params?.id;
+    const userId = req.params.id;
+    const user = await User.findOne({
+      _id: userId,
+    });
+    if (!user) {
+      throw new Error("No user with this id fround.");
+    }
+    res.sendResponse({ user }, null, statusCodes.OK);
+  } catch (e) {
+    e.status = statusCodes.NOT_FOUND;
+    next(e);
+  }
+};
+
+export const getUserInfo = async (
+  req: IRequest,
+  res: IResponse,
+  next: INextFunction
+) => {
+  try {
+    const userId = req?.user?._id;
     const user = await User.findOne({
       _id: userId,
     });
@@ -313,6 +333,28 @@ export const updateProfile = async (
     keys.forEach((update) => (user[update] = req.body[update]));
     await user.save();
     res.sendResponse({ user }, null, statusCodes.OK);
+  } catch (e) {
+    e.status = statusCodes.NOT_FOUND;
+    next(e);
+  }
+};
+
+export const addBulkUsers = async (
+  req: IRequest,
+  res: IResponse,
+  next: INextFunction
+) => {
+  try {
+    const count: number = parseInt(req.query.count as any) || 1000;
+    // Generate and save 10,000 users
+    for (let i = 0; i < count; i++) {
+      const user: any = generateRandomUser(i);
+      if(i%2 === 0){
+        user.userType = 'ADMIN';
+      }
+      await User.create(user);
+    }
+    res.sendResponse({ message:"Data inserted successfully!" }, null, statusCodes.OK);
   } catch (e) {
     e.status = statusCodes.NOT_FOUND;
     next(e);

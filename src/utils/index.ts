@@ -3,3 +3,4 @@ export * from "./connectDatabase";
 export * from "./randomCodeGenerator";
 export * from "./emailService";
 export * from "./allowedKeyUpdates";
+export * from "./randomUser";

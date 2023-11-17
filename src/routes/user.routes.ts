@@ -11,6 +11,7 @@ import {
   verifyEmailToken,
   updateUserById,
   deleteUserById,
+  addBulkUsers,
 } from "../controllers/user.controller";
 import { authAdmin, authClient } from "../middlewares";
 const router = express.Router();
@@ -21,6 +22,8 @@ router.route("/admin/users").get(authAdmin, getUsers);
 router.route("/admin/user/:id").patch(authAdmin, updateUserById);
 router.route("/admin/user/:id").delete(authAdmin,deleteUserById);
 router.route("/admin/user/:id").get(authAdmin, getUserInfoById);
+//This is the seed DB bulk insertion route
+router.route("/admin/insertBulk").post(authAdmin, addBulkUsers);
 
 //CLIENT
 router.route("/user/register").post(registerUser);
